@@ -1,0 +1,84 @@
+fscommand ("allowscale", false);
+fscommand ("allowscale", false);
+// our map is 2-dimensional array
+myMap = [[1, 1, 1, 1, 1, 1, 1, 1], [1, 0, 0, 0, 0, 0, 0, 1], [1, 0, 1, 0, 0, 0, 0, 1], [1, 0, 0, 0, 0, 1, 0, 1], [1, 0, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1, 1]];
+// declare game object that holds info
+game = {tileW:30, tileH:30};
+// walkable tile
+game.Tile0 = function () { };
+game.Tile0.prototype.walkable = true;
+game.Tile0.prototype.frame = 1;
+// wall tile
+game.Tile1 = function () { };
+game.Tile1.prototype.walkable = false;
+game.Tile1.prototype.frame = 2;
+// declare char object, xtile and ytile are tile where chars center is
+char = {xtile:2, ytile:1, speed:4};
+// building the world
+function buildMap (map) {
+    // attach empty mc to hold all the tiles and char
+    _root.attachMovie("empty", "tiles", 1);
+    // declare clip in the game object
+    game.clip = _root.tiles;
+    // get map dimensions
+    var mapWidth = map[0].length;
+    var mapHeight = map.length;
+    // loop to place tiles on stage
+    for (var i = 0; i<mapHeight; ++i) {
+        for (var j = 0; j<mapWidth; ++j) {
+            // name of new tile
+            var name = "t_"+i+"_"+j;
+            // make new tile object in the game
+            game[name] = new game["Tile"+map[i][j]]();
+            // attach tile mc and place it
+            game.clip.attachMovie("tile", name, i*100+j*2);
+            game.clip[name]._x = (j*game.tileW);
+            game.clip[name]._y = (i*game.tileH);
+            // send tile mc to correct frame
+            game.clip[name].gotoAndStop(game[name].frame);
+        }
+    }
+    // add the character mc
+    game.clip.attachMovie("char", "char", 10000);
+    // declare clip in the game object
+    char.clip = game.clip.char;
+    // calculate starting position
+    char.x = (char.xtile*game.tileW)+game.tileW/2;
+    char.y = (char.ytile*game.tileW)+game.tileW/2;
+    // add char dimensions to char object, half of clips width and height
+    char.width = char.clip._width/2;
+    char.height = char.clip._height/2;
+    // place char mc
+    char.clip._x = char.x;
+    char.clip._y = char.y;
+}
+function moveChar (ob, dirx, diry) {
+    ob.x += dirx*ob.speed;
+    ob.y += diry*ob.speed;
+    ob.clip.gotoAndStop(dirx+diry*2+3);
+    ob.clip._x = ob.x;
+    ob.clip._y = ob.y;
+    return (true);
+}
+function detectKeys () {
+    var ob = _root.char;
+    var keyPressed = false;
+    if (Key.isDown(Key.RIGHT)) {
+        keyPressed = _root.moveChar(ob, 1, 0);
+    } else if (Key.isDown(Key.LEFT)) {
+        keyPressed = _root.moveChar(ob, -1, 0);
+    } else if (Key.isDown(Key.UP)) {
+        keyPressed = _root.moveChar(ob, 0, -1);
+    } else if (Key.isDown(Key.DOWN)) {
+        keyPressed = _root.moveChar(ob, 0, 1);
+    }
+    // walk animation
+    if (!keyPressed) {
+        ob.clip.char.gotoAndStop(1);
+    } else {
+        ob.clip.char.play();
+    }
+}
+// make the map
+buildMap(myMap);
+stop ();

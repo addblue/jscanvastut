@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+	<head></head>
+	<body>
+		<canvas id="myCanvas" width="240" height="180" style="border: 1px solid #000000;">
+		
+		</canvas>
+		
+		<script>
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			var now;
+			var dt = 0;
+			var last = timestamp();
+			var step = 1/60;
+			var white_png = null;
+			var black_png = null;
+			var red_png = null;
+			
+			var player = null;
+			
+			function Player(centerX, centerY, imageSrc) {
+				this.centerX = centerX;
+				this.centerY = centerY;
+				this.image = new Image();
+				this.image.src = imageSrc;
+			}
+		
+			var myMap = [
+				[1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 0, 1, 0, 0, 0, 0, 1],
+				[1, 0, 0, 0, 0, 1, 0, 1],
+				[1, 0, 0, 0, 0, 0, 0, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1]
+			];
+			
+			function Tile(width, height, imageSrc) {
+				this.width = width;
+				this.height = height;
+				this.image = new Image();
+				this.image.src = imageSrc;
+				this.walkable = false;
+			}
+			
+			function WhiteTile() {
+				Tile.call(this, 30, 30, 'white.png');
+			}
+			
+			function BlackTile() {
+				Tile.call(this, 30, 30, 'black.png');
+				this.walkable = true;
+			}
+			
+			var game = {tileW: 30, tileH: 30};
+			
+			var posX = 0;
+			var posY = 0;
+			
+			function buildMap(map) {
+				var mapWidth = map[0].length;
+				var mapHeight = map.length;
+				
+				for (var i = 0; i < mapHeight; ++i) {
+					for (var j = 0; j < mapWidth; ++j) {
+						var name = "t_" + i + "_" + j;
+						//game[name] = new game["Tile" + map[i][j]]();
+						
+						if (map[i][j] == 0) {
+							game[name] = new WhiteTile();
+							ctx.drawImage(game[name].image, posX, posY, 30, 30);
+							ctx.strokeRect(posX, posY, 30, 30);
+						} else {
+							game[name] = new BlackTile();
+							ctx.drawImage(game[name].image, posX, posY, 30, 30);
+						}
+						posX += 30;
+					}
+					posX = 0;
+					posY += 30;
+				}
+				
+				player = new Player(2, 1, 'char.png');
+				player.x = (player.centerX * game.tileW) + game.tileW / 2 - player.image.width / 2;
+				player.y = (player.centerY * game.tileH) + game.tileH / 2 - player.image.height / 2;
+				player.width = 20;
+				player.height = 20;
+				
+				ctx.drawImage(player.image, player.x, player.y, 20, 20);
+			}
+			
+			function loadImg() {
+				white_png = new Image();
+				white_png.src = 'white.png';
+				white_png.onload = function() {
+					black_png = new Image();
+					black_png.src = 'black.png';
+					black_png.onload = function() {
+						red_png = new Image();
+						red_png.src = 'char.png';
+						red_png.onload = function() {
+							buildMap(myMap);
+						}
+					}
+				}
+			}
+			
+			loadImg();
+			
+			function frame() {
+				now = timestamp();
+				dt = dt + Math.min(1, (now - last) / 1000);
+				while (dt > step) {
+					dt = dt - step;
+					update(step);
+				}
+				render(dt);
+				last = now;
+				requestAnimationFrame(frame);
+			}
+			
+			function timestamp() {
+				return window.performance.now();
+			}
+			
+			function update(step) {
+				console.log('updatin');
+			}
+			
+			function render(delta) {
+				console.log('renderin');
+			}
+			
+			document.onkeydown = function(e) {
+				switch (e.keyCode) {
+					case 37:
+						alert('left');
+						break;
+					case 38:
+						alert('up');
+						break;
+					case 39:
+						alert('right');
+						break;
+					case 40:
+						alert('down');
+						break;
+				}
+			};
+			
+			requestAnimationFrame(frame);
+			
+			//setTimeout(function() {}, 1000);
+		</script>
+	</body>
+</html>
